@@ -139,3 +139,7 @@ cython_debug/
 
 # json file
 *.json
+
+# Jupyter notebook
+*.ipynb
+
