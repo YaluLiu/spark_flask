@@ -8,11 +8,18 @@ import numpy as np
 import pandas as pd
 import json
 import os
+from pymongo import MongoClient
+from sshtunnel import SSHTunnelForwarder
+
+MONGO_HOST = "192.168.200.45"
+MONGO_DB = "DATABASE_NAME"
+MONGO_USER = "boli"
+MONGO_PASS = "123456"
 
 def trafficLight(DF):
-    DF = DF.select(DF["autoDrivingCar.timestampSec"].alias("timestamp"), 
-                   DF["trafficSignal.currentSignal"].alias("signal"),
-                   DF["sequenceNum"].alias("frameID"))
+    DF = DF.select("timestamp", 
+                   "signal",
+                   "frameID")
     DF = DF.withColumn("indicator", F.when(DF.signal != "None", 1).otherwise(0))
     
     DF = DF.withColumn("id", F.monotonically_increasing_id())
@@ -43,18 +50,16 @@ def trafficLight(DF):
     return {"traffic_light_time": df.to_dict(orient='records'), "traffic_light_count": df.shape[0]}
 
 def objectStat(DF):
-    DF = DF.select(DF["object"], DF["sequenceNum"].alias("frameID"))
+    DF = DF.select("object", "frameID")
     DF = DF.withColumn("new", F.explode("object"))\
             .select("new.id", "new.type", "new.timestampSec", "frameID")\
-            .dropna()\
-            .select("id", "type", "timestampSec", "frameID")
+            .dropna()
     w = Window.partitionBy("id", "type")
     DF = DF.withColumn('max_timestamp', F.max('timestampSec').over(w))\
             .withColumn('min_timestamp', F.min('timestampSec').over(w))\
             .withColumn('start_frameID', F.min('frameID').over(w))\
             .withColumn('end_frameID', F.max('frameID').over(w))
-    DF = DF.filter(((DF.frameID == DF.start_frameID) | (DF.timestampSec == DF.end_frameID)) & \
-                   (DF.start_frameID != DF.end_frameID))
+    DF = DF.filter((DF.frameID == DF.start_frameID) & (DF.start_frameID != DF.end_frameID))
     DF = DF.select("id", "type", "max_timestamp", "min_timestamp", "start_frameID", "end_frameID")\
             .withColumn("start_time", 
                         F.from_unixtime(F.col("min_timestamp"),'yyyy-MM-dd HH:mm:ss'))\
@@ -70,28 +75,60 @@ def objectQuery(DF, object_type):
             object_type.lower() + "_count": DF.count()}
 
 
-def init():
-    spark = SparkSession.builder.appName('signal').getOrCreate()
-    return spark
+def init(server, record_json_name):
+    pipeline = [{'$match': { 'record_name' : record_json_name }}, 
+                {'$project': {'_id': 0, 'frames': 1}}, 
+                {'$unwind': '$frames'}, 
+                {'$project': {'timestamp': '$frames.autoDrivingCar.timestampSec', 
+                              'signal': '$frames.trafficSignal.currentSignal', 
+                              'frameID': '$frames.sequenceNum', 
+                              'object': '$frames.object'}}]
+    
+    input_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.records'
+    output_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.stats'
+    spark = SparkSession \
+            .builder \
+            .appName("signal") \
+            .config("spark.mongodb.input.uri", 
+                    input_uri) \
+            .config("spark.mongodb.output.uri", 
+                    output_uri) \
+            .config("spark.jars.packages", 
+                    "org.mongodb.spark:mongo-spark-connector_2.12:3.0.0") \
+            .getOrCreate()
+    return spark, pipeline
 
-def query(spark,records_path):
-    res = {}
-    for file in os.listdir(records_path):
-        DF = spark.read.json(records_path + file, multiLine=True)
-        traffic = trafficLight(DF)
-        Objects = objectStat(DF)
-        pedestrian = objectQuery(Objects, "PEDESTRIAN")
-        vehicle = objectQuery(Objects, "VEHICLE")
-        bicycle = objectQuery(Objects, "BICYCLE")
+def stat(spark, pipeline, record_json_name, collection):
+    DF = spark.read.format("mongo").option("pipeline", pipeline).load()
+    
+    traffic = trafficLight(DF)
+    Objects = objectStat(DF)
+    pedestrian = objectQuery(Objects, "PEDESTRIAN")
+    vehicle = objectQuery(Objects, "VEHICLE")
+    bicycle = objectQuery(Objects, "BICYCLE")
         
-        res[file] = dict(traffic, **pedestrian, **vehicle, **bicycle)
-    return res
+    collection.insert_one({'record_name': record_json_name, 
+                           'stat': dict(traffic, **pedestrian, **vehicle, **bicycle)})
 
 if __name__ == "__main__":
-    dir_path = "datas/"
-    spark = init()
-    ans = query(spark,dir_path)
+    server = SSHTunnelForwarder(
+        MONGO_HOST,
+        ssh_username=MONGO_USER,
+        ssh_password=MONGO_PASS,
+        remote_bind_address=('127.0.0.1', 27017))
+    
+    server.start()
+    client = MongoClient('mongodb://localhost:' + str(server.local_bind_port) + '/')
+    stats = client.apollo.stats
+    
+    records_list = ['1.json']
+    for record_json_name in records_list:
+        spark, pipeline = init(server, record_json_name)
+        stat(spark, pipeline, record_json_name, stats)
+    
+    client.close()
+    server.stop()
 
-    # datas = json.dumps(ans, indent=4)
-    from solve_json import write_json
-    write_json(ans,"datas/query_res.json")
+#     datas = json.dumps(ans, indent=4)
+#     from solve_json import write_json
+#     write_json(ans,"datas/query_res.json")
