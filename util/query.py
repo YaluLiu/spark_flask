@@ -85,7 +85,7 @@ def init(server, record_json_name):
                               'object': '$frames.object'}}]
     
     input_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.records'
-    output_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.stats'
+    output_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.statistics'
     spark = SparkSession \
             .builder \
             .appName("signal") \
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     
     server.start()
     client = MongoClient('mongodb://localhost:' + str(server.local_bind_port) + '/')
-    stats = client.apollo.stats
+    stats = client.apollo.statistics
     
     records_list = ['1.json']
     for record_json_name in records_list:
