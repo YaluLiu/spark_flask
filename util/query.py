@@ -76,19 +76,16 @@ def objectQuery(DF, object_type):
 
 
 def init(server, record_json_name):
-    pipeline = [{'$match': { 'record_name' : record_json_name }}, 
-                {'$project': {'_id': 0, 'frames': 1}}, 
-                {'$unwind': '$frames'}, 
-                {'$project': {'timestamp': '$frames.autoDrivingCar.timestampSec', 
-                              'signal': '$frames.trafficSignal.currentSignal', 
-                              'frameID': '$frames.sequenceNum', 
-                              'object': '$frames.object'}}]
+    pipeline = [{'$project': {'timestamp': '$autoDrivingCar.timestampSec', 
+                              'signal': '$trafficSignal.currentSignal', 
+                              'frameID': '$sequenceNum', 
+                              'object': '$object'}}]
     
-    input_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.records'
+    input_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.' + record_json_name
     output_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.statistics'
     spark = SparkSession \
             .builder \
-            .appName("signal") \
+            .appName(record_json_name) \
             .config("spark.mongodb.input.uri", 
                     input_uri) \
             .config("spark.mongodb.output.uri", 
@@ -121,10 +118,11 @@ if __name__ == "__main__":
     client = MongoClient('mongodb://localhost:' + str(server.local_bind_port) + '/')
     stats = client.apollo.statistics
     
-    records_list = ['1.json']
+    records_list = ['0','1','20201130152636','record_35']
     for record_json_name in records_list:
         spark, pipeline = init(server, record_json_name)
         stat(spark, pipeline, record_json_name, stats)
+        spark.stop()
     
     client.close()
     server.stop()
