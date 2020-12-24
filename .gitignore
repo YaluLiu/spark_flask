@@ -143,3 +143,8 @@ cython_debug/
 # shell script just for test
 docker/dev_test.sh
 docker/example.sh
+
+
+# Jupyter notebook
+*.ipynb
+
