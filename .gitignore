@@ -144,6 +144,10 @@ cython_debug/
 docker/dev_test.sh
 docker/example.sh
 
+# py file for test
+connection.py
+client.py
+
 
 # Jupyter notebook
 *.ipynb

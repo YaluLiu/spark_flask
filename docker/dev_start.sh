@@ -42,6 +42,7 @@ function create_image() {
     set -x
     cd docker
     docker build -t ${IMAGE_NAME} .
+    docker build -t ${IMAGE_NAME} .
     cd ..
     set +x
 
@@ -59,8 +60,7 @@ function start_work() {
         -p ${PORT}:${PORT} \
         -v ${PROJECT_DIR}:${DOCKER_ROOT_DIR} \
         --name "${CONTAINER_NAME}" \
-        "${IMAGE_NAME}" \
-        /bin/bash
+        "${IMAGE_NAME}"
     set +x
 
     if [ $? -ne 0 ]; then

@@ -20,7 +20,7 @@
 # CMD 
 DOCKER_RUN="docker run -dt"
 SPARK_ENV_IMAGE="spark_env"
-CONTAINER_NAME="spark_demo"
+CONTAINER_NAME="spark"
 IMAGE_NAME="spark"
 DOCKER_ROOT_DIR="/home"
 PORT="7010"
