@@ -58,7 +58,7 @@ if __name__ == '__main__':
         frame_end = i + 1
         data = get_frame_by_num(record_id,frame_start,frame_end)
         # data = json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
-        print(i,len(data),end= " ")
+        print(i,len(data))
 
         i += 1
         if i == 198:

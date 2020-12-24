@@ -139,3 +139,7 @@ cython_debug/
 
 # json file
 *.json
+
+# shell script just for test
+docker/dev_test.sh
+docker/example.sh
