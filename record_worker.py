@@ -48,7 +48,7 @@ class Record_Worker():
         print(self.mongo.name_records())
         print(self.mongo.name_spark())
 
-    def stop(self):
+    def close_connnection(self):
         self.mongo.close()
 
 
@@ -68,5 +68,5 @@ if __name__ == "__main__":
     print(record_worker.mongo.name_records())
     print(record_worker.mongo.name_spark())
 
-    record_worker.stop()
+    record_worker.close_connnection()
 
