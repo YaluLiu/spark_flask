@@ -121,7 +121,11 @@ if __name__ == "__main__":
     client = MongoClient('mongodb://localhost:' + str(server.local_bind_port) + '/')
     stats = client.apollo.statistics
     
-    records_list = ['0','1','20201130152636','record_35']
+#     records_list = ['0','1','20201130152636','record_35']
+    records_list = client.apollo.collection_names()
+    if 'statistics' in records_list:
+        records_list.remove('statistics')
+    print(records_list)
     for record_json_name in records_list:
         spark, pipeline = init(server, record_json_name)
         stat(spark, pipeline, record_json_name, stats)

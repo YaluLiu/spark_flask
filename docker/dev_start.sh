@@ -60,6 +60,7 @@ function start_work() {
         -p ${PORT}:${PORT} \
         -v ${PROJECT_DIR}:${DOCKER_ROOT_DIR} \
         --name "${CONTAINER_NAME}" \
+        --restart=always \
         "${IMAGE_NAME}"
     set +x
 

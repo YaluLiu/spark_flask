@@ -23,10 +23,11 @@ def get_datas(data_path):
     return ret_datas
 
 
-
 if __name__ == "__main__":
     data_path = "datas"
     datas = get_datas(data_path)
     print(datas.keys())
     data = datas["1.json"]
     print(len(data),type(data))
+    data = read_json("query_res.json")
+    print(data["0.json"].keys())
