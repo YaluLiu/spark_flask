@@ -22,5 +22,5 @@ if __name__ == "__main__":
     word = "vehicle"
     time_key = word + "_time"
     part_data = get_value(word,data_0)
-    
+
     print(json.dumps(part_data, indent=4, sort_keys=True))

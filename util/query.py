@@ -1,20 +1,19 @@
+import sys
+sys.path.append("..")
+
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import pyspark.sql.functions as F
 from pyspark.sql import Window
-import sys
+
+
 import numpy as np
 import pandas as pd
 import json
 import os
-from pymongo import MongoClient
-from sshtunnel import SSHTunnelForwarder
 
-MONGO_HOST = "192.168.200.45"
-MONGO_DB = "DATABASE_NAME"
-MONGO_USER = "boli"
-MONGO_PASS = "123456"
+
 
 def trafficLight(DF):
     DF = DF.select("timestamp", 
@@ -78,27 +77,24 @@ def objectQuery(DF, object_type):
             object_type.lower() + "_count": DF.count()}
 
 
-def init(server, record_json_name):
+def init_spark(server, record_json_name):
     pipeline = [{'$project': {'timestamp': '$autoDrivingCar.timestampSec', 
                               'signal': '$trafficSignal.currentSignal', 
                               'frameID': '$sequenceNum', 
                               'object': '$object'}}]
     
     input_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.' + record_json_name
-    output_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.statistics'
     spark = SparkSession \
             .builder \
             .appName(record_json_name) \
-            .config("spark.mongodb.input.uri", 
+            .config("spark.mongodb.input.uri",
                     input_uri) \
-            .config("spark.mongodb.output.uri", 
-                    output_uri) \
             .config("spark.jars.packages", 
                     "org.mongodb.spark:mongo-spark-connector_2.12:3.0.0") \
             .getOrCreate()
     return spark, pipeline
 
-def stat(spark, pipeline, record_json_name, collection):
+def spark_work(spark, pipeline, record_json_name):
     DF = spark.read.format("mongo").option("pipeline", pipeline).load()
     
     traffic = trafficLight(DF)
@@ -107,33 +103,31 @@ def stat(spark, pipeline, record_json_name, collection):
     vehicle = objectQuery(Objects, "VEHICLE")
     bicycle = objectQuery(Objects, "BICYCLE")
         
-    collection.insert_one({'record_name': record_json_name, 
-                           'stat': dict(traffic, **pedestrian, **vehicle, **bicycle)})
+    return dict(traffic, **pedestrian, **vehicle, **bicycle)
+
+
 
 if __name__ == "__main__":
-    server = SSHTunnelForwarder(
-        MONGO_HOST,
-        ssh_username=MONGO_USER,
-        ssh_password=MONGO_PASS,
-        remote_bind_address=('127.0.0.1', 27017))
-    
-    server.start()
-    client = MongoClient('mongodb://localhost:' + str(server.local_bind_port) + '/')
-    stats = client.apollo.statistics
-    
-#     records_list = ['0','1','20201130152636','record_35']
-    records_list = client.apollo.collection_names()
-    if 'statistics' in records_list:
-        records_list.remove('statistics')
-    print(records_list)
-    for record_json_name in records_list:
-        spark, pipeline = init(server, record_json_name)
-        stat(spark, pipeline, record_json_name, stats)
-        spark.stop()
-    
-    client.close()
-    server.stop()
+    from mongo_manager import MongoDB
 
-#     datas = json.dumps(ans, indent=4)
-#     from solve_json import write_json
-#     write_json(ans,"datas/query_res.json")
+    mongo = MongoDB("../cfg/fudan.json")
+    records_list = mongo.name_records()
+    print(records_list)
+    spark_list = mongo.name_spark()
+    print(spark_list)
+
+    # res = mongo.client.spark[spark_list[0]].find_one()
+    # # print(res)
+
+    for record_json_name in records_list:
+        spark, pipeline = init_spark(mongo.server, record_json_name)
+        spark_res = spark_work(spark, pipeline, record_json_name)
+        spark.stop()
+
+        # spark_table = mongo.client.spark[record_json_name]
+        # spark_table.insert_one(spark_res)
+        
+    
+    mongo.close()
+
+

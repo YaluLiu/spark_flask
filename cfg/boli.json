@@ -1,0 +1,8 @@
+{
+    "host":"192.168.200.45",
+    "port":27017,
+    "user":"boli",
+    "pwd":"123456",
+    "records_database":"apollo",
+    "spark_database":"spark"
+}

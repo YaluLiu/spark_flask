@@ -22,7 +22,6 @@ def get_datas(data_path):
             ret_datas[file] = read_json(file_path)
     return ret_datas
 
-
 if __name__ == "__main__":
     data_path = "datas"
     datas = get_datas(data_path)
