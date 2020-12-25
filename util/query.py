@@ -36,14 +36,13 @@ def trafficLight(DF):
                           ((DF.indicator == 1) & (DF.section_start == 0) & (DF.id == max_id)) | 
                           ((DF.indicator == 1) & (DF.section_end == 0) & (DF.id == min_id)))\
                     .select("timestamp", "frameID")\
-                    .withColumn("timestamp_datetime", 
-                                F.from_unixtime(F.col("timestamp"),'yyyy-MM-dd HH:mm:ss'))\
-                    .select("timestamp_datetime", "frameID")
+                    .withColumn("timestamp", 
+                                F.from_unixtime(F.col("timestamp"),'yyyy-MM-dd HH:mm:ss'))
     
     df = DF.toPandas()
     df = pd.concat([df.add_suffix('1'), df.shift(-1).add_suffix('2')], axis=1)
     df = df.loc[::2, :]
-    df = df.rename(columns={"timestamp_datetime1": "start_time", "timestamp_datetime2": "end_time", 
+    df = df.rename(columns={"timestamp1": "start_time", "timestamp2": "end_time", 
                             "frameID1": "start_frame", "frameID2": "end_frame"})\
             .astype({'end_frame': 'int64'})\
             .sort_values(by=['start_frame', 'end_frame'])
@@ -56,17 +55,16 @@ def objectStat(DF):
             .select("new.id", "new.type", "new.timestampSec", "frameID")\
             .dropna()
     w = Window.partitionBy("id", "type")
-    DF = DF.withColumn('max_timestamp', F.max('timestampSec').over(w))\
-            .withColumn('min_timestamp', F.min('timestampSec').over(w))\
+    DF = DF.withColumn('end_time', F.max('timestampSec').over(w))\
+            .withColumn('start_time', F.min('timestampSec').over(w))\
             .withColumn('start_frame', F.min('frameID').over(w))\
             .withColumn('end_frame', F.max('frameID').over(w))
     DF = DF.filter((DF.frameID == DF.start_frame) & (DF.start_frame != DF.end_frame))
-    DF = DF.select("id", "type", "max_timestamp", "min_timestamp", "start_frame", "end_frame")\
+    DF = DF.select("id", "type", "start_time", "end_time", "start_frame", "end_frame")\
             .withColumn("start_time", 
-                        F.from_unixtime(F.col("min_timestamp"),'yyyy-MM-dd HH:mm:ss'))\
+                        F.from_unixtime(F.col("start_time"),'yyyy-MM-dd HH:mm:ss'))\
             .withColumn("end_time", 
-                        F.from_unixtime(F.col("max_timestamp"),'yyyy-MM-dd HH:mm:ss'))\
-            .select("id", "type", "start_time", "end_time", "start_frame", "end_frame")\
+                        F.from_unixtime(F.col("end_time"),'yyyy-MM-dd HH:mm:ss'))\
             .sort("start_frame", "end_frame")
     return DF
 
