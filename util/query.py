@@ -45,7 +45,9 @@ def trafficLight(DF):
     df = pd.concat([df.add_suffix('1'), df.shift(-1).add_suffix('2')], axis=1)
     df = df.loc[::2, :]
     df = df.rename(columns={"timestamp_datetime1": "start_time", "timestamp_datetime2": "end_time", 
-                            "frameID1": "start_frame", "frameID2": "end_frame"}).astype({'end_frame': 'int64'})
+                            "frameID1": "start_frame", "frameID2": "end_frame"})\
+            .astype({'end_frame': 'int64'})\
+            .sort_values(by=['start_frame', 'end_frame'])
     
     return {"traffic_light_time": df.to_dict(orient='records'), "traffic_light_count": df.shape[0]}
 
@@ -57,20 +59,21 @@ def objectStat(DF):
     w = Window.partitionBy("id", "type")
     DF = DF.withColumn('max_timestamp', F.max('timestampSec').over(w))\
             .withColumn('min_timestamp', F.min('timestampSec').over(w))\
-            .withColumn('start_frameID', F.min('frameID').over(w))\
-            .withColumn('end_frameID', F.max('frameID').over(w))
-    DF = DF.filter((DF.frameID == DF.start_frameID) & (DF.start_frameID != DF.end_frameID))
-    DF = DF.select("id", "type", "max_timestamp", "min_timestamp", "start_frameID", "end_frameID")\
+            .withColumn('start_frame', F.min('frameID').over(w))\
+            .withColumn('end_frame', F.max('frameID').over(w))
+    DF = DF.filter((DF.frameID == DF.start_frame) & (DF.start_frame != DF.end_frame))
+    DF = DF.select("id", "type", "max_timestamp", "min_timestamp", "start_frame", "end_frame")\
             .withColumn("start_time", 
                         F.from_unixtime(F.col("min_timestamp"),'yyyy-MM-dd HH:mm:ss'))\
             .withColumn("end_time", 
                         F.from_unixtime(F.col("max_timestamp"),'yyyy-MM-dd HH:mm:ss'))\
-            .select("id", "type", "start_time", "end_time", "start_frameID", "end_frameID")
+            .select("id", "type", "start_time", "end_time", "start_frame", "end_frame")\
+            .sort("start_frame", "end_frame")
     return DF
 
 def objectQuery(DF, object_type):
     DF = DF.filter(DF.type == object_type)\
-            .select("id", "start_time", "end_time", "start_frameID", "end_frameID")
+            .select("id", "start_time", "end_time", "start_frame", "end_frame")
     return {object_type.lower() + "_time": DF.toPandas().to_dict(orient='records'), 
             object_type.lower() + "_count": DF.count()}
 
