@@ -77,16 +77,16 @@ def objectQuery(DF, object_type):
             object_type.lower() + "_count": DF.count()}
 
 
-def init_spark(server, record_json_name):
+def init_spark(server, records_database_name,record_name):
     pipeline = [{'$project': {'timestamp': '$autoDrivingCar.timestampSec', 
                               'signal': '$trafficSignal.currentSignal', 
                               'frameID': '$sequenceNum', 
                               'object': '$object'}}]
     
-    input_uri = 'mongodb://localhost:' + str(server.local_bind_port) + '/apollo.' + record_json_name
+    input_uri = 'mongodb://localhost:{}/{}.{}'.format(server.local_bind_port,records_database_name,record_name) 
     spark = SparkSession \
             .builder \
-            .appName(record_json_name) \
+            .appName(record_name) \
             .config("spark.mongodb.input.uri",
                     input_uri) \
             .config("spark.jars.packages", 
@@ -94,7 +94,7 @@ def init_spark(server, record_json_name):
             .getOrCreate()
     return spark, pipeline
 
-def spark_work(spark, pipeline, record_json_name):
+def spark_work(spark, pipeline, record_name):
     DF = spark.read.format("mongo").option("pipeline", pipeline).load()
     
     traffic = trafficLight(DF)
@@ -119,12 +119,15 @@ if __name__ == "__main__":
     # res = mongo.client.spark[spark_list[0]].find_one()
     # # print(res)
 
-    for record_json_name in records_list:
-        spark, pipeline = init_spark(mongo.server, record_json_name)
-        spark_res = spark_work(spark, pipeline, record_json_name)
+    for record_name in records_list:
+        print(mongo.records_database_name, record_name)
+        spark, pipeline = init_spark(mongo.server, mongo.records_database_name, record_name)
+        spark_res = spark_work(spark, pipeline, record_name)
         spark.stop()
 
-        # spark_table = mongo.client.spark[record_json_name]
+
+        print(spark_res)
+        # spark_table = mongo.client.spark[record_name]
         # spark_table.insert_one(spark_res)
         
     
