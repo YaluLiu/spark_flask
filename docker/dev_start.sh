@@ -15,57 +15,77 @@ function print_debug {
 }
 
 function post_run_setup() {
-    set -x
-    docker exec -it "${CONTAINER_NAME}" bash
-    set +x
-
-    if [ $? -ne 0 ]; then
-        error "Failed to get into docker container \"${CONTAINER_NAME}\" based on image: ${IMAGE_NAME}"
-        exit 1
-    fi
+    docker logs -ft ${SPARK_CONTAINER}
+    # docker exec -it "${SPARK_CONTAINER}" bash
 }
 
 function clean_container() {
-    set -x
-    docker stop ${CONTAINER_NAME} 
-    docker rm ${CONTAINER_NAME}
-    docker rmi ${IMAGE_NAME}
-    set +x
-
-    if [ $? -ne 0 ]; then
-        error "Failed to start docker container \"${CONTAINER_NAME}\" based on image: ${IMAGE_NAME}"
-        exit 1
-    fi
+    docker stop ${SPARK_CONTAINER} 
+    docker rm ${SPARK_CONTAINER}
 }
 
-function create_image() {
-    set -x
-    cd docker
-    docker build -t ${IMAGE_NAME} .
-    docker build -t ${IMAGE_NAME} .
-    cd ..
-    set +x
 
+function create_image() {
+    cd docker
+    if [[ "$(docker images -q ${SPARK_ENV_IMAGE} 2> /dev/null)" == "" ]]; 
+    then
+        set -x
+        docker pull ${DOCKER_HUB_USER}/${SPARK_ENV_IMAGE}
+        docker tag ${DOCKER_HUB_USER}/${SPARK_ENV_IMAGE} ${SPARK_ENV_IMAGE}
+        set +x
+    else
+        log "alreay found ENV_IMAGE:${SPARK_ENV_IMAGE}."
+    fi
+
+    if [[ "$(docker images -q ${SPARK_IMAGE} 2> /dev/null)" == "" ]]; 
+    then
+        set -x
+        docker build -t ${SPARK_IMAGE} .
+        set +x
+    else
+        log "alreay found WORK_IMAGE:${SPARK_IMAGE},delete it and rebuild."
+        set -x
+        docker rmi ${SPARK_IMAGE}
+        docker build -t ${SPARK_IMAGE} .
+        set +x
+    fi
+
+    
+    cd ..
+    
     if [ $? -ne 0 ]; then
-        error "Failed to start docker container \"${APOLLO_DEV}\" based on image: ${APOLLO_DEV_IMAGE}"
+        error "Failed to build ${SPARK_IMAGE}!"
         exit 1
     fi
     
 }
 
-function start_work() {
-    set -x
+function check_clean_container(){
+    state_run=`docker ps | grep ${SPARK_CONTAINER} | grep Up`
+    state_stop=`docker ps -a| grep ${SPARK_CONTAINER} | grep Exist`
+    # echo $state_run  ${#state_run}
+    # echo $state_stop ${#state_stop}
 
+    if [[ -n $state_run ]]; then # state is run
+        clean_container
+    elif [[ -n $state_stop ]]; then # state is stop
+        docker rm ${SPARK_CONTAINER}
+    fi
+}
+
+function start_work() {
+    check_clean_container
+    set -x
     ${DOCKER_RUN} \
-        -p ${PORT}:${PORT} \
+        -p ${SPARK_PORT}:${SPARK_PORT} \
         -v ${PROJECT_DIR}:${DOCKER_ROOT_DIR} \
-        --name "${CONTAINER_NAME}" \
+        --name "${SPARK_CONTAINER}" \
         --restart=always \
-        "${IMAGE_NAME}"
+        "${SPARK_IMAGE}"
     set +x
 
     if [ $? -ne 0 ]; then
-        error "Failed to start docker container \"${APOLLO_DEV}\" based on image: ${APOLLO_DEV_IMAGE}"
+        error "Failed to start docker container \"${SPARK_CONTAINER}\" based on image: ${SPARK_IMAGE}"
         exit 1
     fi
     
@@ -85,7 +105,9 @@ function main() {
     fi
     if [ $1 == "start" ]; then
         start_work
-        post_run_setup
+    fi
+    if [ $1 == "test" ]; then
+        echo "test"
     fi
 }
 

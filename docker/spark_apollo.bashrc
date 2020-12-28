@@ -19,11 +19,20 @@
 
 # CMD 
 DOCKER_RUN="docker run -dt"
-SPARK_ENV_IMAGE="spark_env"
-CONTAINER_NAME="spark"
-IMAGE_NAME="spark"
 DOCKER_ROOT_DIR="/home"
-PORT="7010"
+
+DOCKER_HUB_USER="353942829"
+SPARK_ENV_IMAGE="spark_env"
+
+# main server
+SPARK_CONTAINER="spark"
+SPARK_IMAGE="spark"
+SPARK_PORT="7010"
+
+# mongodb docker
+MONGO_CONTAINER="mongo"
+MONGO_IMAGE="mongo:4.4.2"
+MONGO_PORT="27017"
 
 #  color 
 BOLD='\033[1m'
@@ -36,6 +45,10 @@ NO_COLOR='\033[0m'
 
 function env() {
   (echo >&2 -e "[${YELLOW} ENV ${NO_COLOR}] $*")
+}
+
+function log() {
+  (echo >&2 -e "[${GREEN} LOG ${GREEN}${NO_COLOR}]${GREEN} $* ${NO_COLOR}")
 }
 
 function ok() {

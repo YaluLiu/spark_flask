@@ -53,6 +53,9 @@ class MongoDB():
 
     def get_spark_table(self,record_name):
         return self.spark_database()[record_name]
+    
+    def get_spark_merge_table(self):
+        return self.spark_database()["sparks"]
 
     def get_table(self,record_name):
         return self.get_record_table(record_name), \

@@ -34,10 +34,13 @@ class Record_Worker():
             spark, pipeline = init_spark(self.mongo.server, self.mongo.records_database_name, record_name)
             spark_res = spark_work(spark, pipeline, record_name)
             spark.stop()
-            print(spark_res)
+            print(spark_res.keys())
 
             spark_table = self.mongo.get_spark_table(record_name)
             spark_table.insert_one(spark_res)
+
+            spark_merge_table = self.mongo.get_spark_merge_table()
+            spark_merge_table.insert_one(spark_res)
 
     
     def clean(self):
@@ -55,7 +58,7 @@ class Record_Worker():
 
 if __name__ == "__main__":
     dir_path = "datas"
-    cfg_file = "cfg/fudan.json"
+    cfg_file = "cfg/default.json"
     record_worker = Record_Worker(dir_path,cfg_file)
     record_worker.clean()
 

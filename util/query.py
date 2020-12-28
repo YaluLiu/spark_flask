@@ -108,7 +108,7 @@ def spark_work(spark, pipeline, record_name):
 if __name__ == "__main__":
     from mongo_manager import MongoDB
 
-    mongo = MongoDB("../cfg/fudan.json")
+    mongo = MongoDB("../cfg/default.json")
     records_list = mongo.name_records()
     print(records_list)
     spark_list = mongo.name_spark()

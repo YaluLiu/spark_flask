@@ -1,5 +1,5 @@
-from spark_env
+from 353942829/spark_env
 
 WORKDIR      /home
-ENTRYPOINT   ["python3"]
-CMD          ["server.py"]
+ENTRYPOINT   ["gunicorn"]
+CMD          ["-c","gunicorn.py", "server:app"]
