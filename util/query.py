@@ -95,13 +95,16 @@ def init_spark(server, records_database_name,record_name):
 def spark_work(spark, pipeline, record_name):
     DF = spark.read.format("mongo").option("pipeline", pipeline).load()
     
+    frame_count = {"frame_count": DF.count()}
     traffic = trafficLight(DF)
     Objects = objectStat(DF)
     pedestrian = objectQuery(Objects, "PEDESTRIAN")
     vehicle = objectQuery(Objects, "VEHICLE")
     bicycle = objectQuery(Objects, "BICYCLE")
+    object_encounter_count = {"object_encounter_count": 
+                              pedestrian["pedestrian_count"] + vehicle["vehicle_count"] + bicycle["bicycle_count"]}
         
-    return dict(traffic, **pedestrian, **vehicle, **bicycle)
+    return dict(traffic, **pedestrian, **vehicle, **bicycle, **frame_count, **object_encounter_count)
 
 
 
