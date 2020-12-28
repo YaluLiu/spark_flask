@@ -1,5 +1,5 @@
 {
-    "host":"192.168.200.233",
+    "host":"localhost",
     "port":27017,
     "user":"fudan",
     "pwd":"123",
