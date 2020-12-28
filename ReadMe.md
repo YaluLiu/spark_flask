@@ -61,6 +61,10 @@ sudo bash docker/dev_start.sh clean
 
 #### 完整步骤
 
-1. 搭建mongodb数据库环境，测试可用
-2. 启动spark容器
-3. 启动前端网页
+1. 下载压缩后的datas目录，里面放置了两个测试用json格式record文件。
+```
+链接：https://pan.baidu.com/s/1jMfC484-7by6HnR4WaV_PA 提取码：5o4l 
+```
+2. 搭建mongodb数据库环境，测试可用
+3. 启动spark容器
+4. 启动前端网页
