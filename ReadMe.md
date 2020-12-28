@@ -11,6 +11,7 @@
   * [record_worker.py](record_worker.py) 与mongodb交互，读取json格式数据，连同spark解析结果一起存储到数据库
   * [query.py](util/query.py)  spark工作模块
   * [mongo_manager.py](util/mongo_manager.py)  连接mongodb的模块
+  * [default.cfg](cfg/default.cfg)  默认的连接mongodb的配置，需要修改host，user,pwd三个参数
 
 #### 目录结构
 
@@ -21,9 +22,6 @@
     ├── docker                 # 生成镜像，制作docker容器的脚本
     ├── util                   # 经常被调用的python模块
     └── README.md              # readme
-
-
-mask.npy 可由[show_mask.py](tools/show_mask.py)显示
 
 #### mongo配置文件
 ```json
