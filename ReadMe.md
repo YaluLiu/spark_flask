@@ -36,6 +36,12 @@
 ```
 *  非特殊情况下,只有host,user,pwd需要修改，设置为自己部署的mongodb参数.
 
+
+#### 服务器端接口说明
+
+见[API_interface.md](API_interface.md)
+
+
 #### mongodb搭建方法（下面为在本机搭建mongodb）
 
 ```
