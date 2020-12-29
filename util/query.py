@@ -37,17 +37,22 @@ def trafficLight(DF):
                           ((DF.indicator == 1) & (DF.section_end == 0) & (DF.id == min_id)))\
                     .select("timestamp", "frameID")\
                     .withColumn("timestamp", 
-                                F.from_unixtime(F.col("timestamp"),'yyyy-MM-dd HH:mm:ss'))
+                                F.from_unixtime(F.col("timestamp"),'yyyy-MM-dd HH:mm:ss'))\
+                    .withColumn("row_num", F.monotonically_increasing_id())
     
-    df = DF.toPandas()
-    df = pd.concat([df.add_suffix('1'), df.shift(-1).add_suffix('2')], axis=1)
-    df = df.loc[::2, :]
-    df = df.rename(columns={"timestamp1": "start_time", "timestamp2": "end_time", 
-                            "frameID1": "start_frame", "frameID2": "end_frame"})\
-            .astype({'end_frame': 'int64'})\
-            .sort_values(by=['start_frame', 'end_frame'])
+    D1 = DF.withColumn("encounter", (col("row_num") / 2).cast('int'))\
+            .filter(col("row_num") % 2 == 0)\
+            .select("timestamp", "frameID", "encounter")\
+            .withColumnRenamed("timestamp", "start_time")\
+            .withColumnRenamed("frameID", "start_frame")
     
-    return {"traffic_light_time": df.to_dict(orient='records'), "traffic_light_count": df.shape[0]}
+    D2 = DF.withColumn("encounter", (col("row_num") / 2).cast('int'))\
+            .filter(col("row_num") % 2 == 1)\
+            .select("timestamp", "frameID", "encounter")\
+            .withColumnRenamed("timestamp", "end_time")\
+            .withColumnRenamed("frameID", "end_frame")
+    
+    return D1.join(D2, ("encounter")).drop("encounter")
 
 def objectStat(DF):
     DF = DF.select("object", "frameID")
@@ -64,13 +69,14 @@ def objectStat(DF):
             .withColumn("start_time", 
                         F.from_unixtime(F.col("start_time"),'yyyy-MM-dd HH:mm:ss'))\
             .withColumn("end_time", 
-                        F.from_unixtime(F.col("end_time"),'yyyy-MM-dd HH:mm:ss'))\
-            .sort("start_frame", "end_frame")
+                        F.from_unixtime(F.col("end_time"),'yyyy-MM-dd HH:mm:ss'))
     return DF
 
 def objectQuery(DF, object_type):
-    DF = DF.filter(DF.type == object_type)\
-            .select("id", "start_time", "end_time", "start_frame", "end_frame")
+    if object_type != "traffic_light":
+        DF = DF.filter(DF.type == object_type)\
+                .select("id", "start_time", "end_time", "start_frame", "end_frame")
+    DF = DF.sort("start_frame", "end_frame")
     return {object_type.lower() + "_time": DF.toPandas().to_dict(orient='records'), 
             object_type.lower() + "_count": DF.count()}
 
@@ -96,7 +102,7 @@ def spark_work(spark, pipeline, record_name):
     DF = spark.read.format("mongo").option("pipeline", pipeline).load()
     
     frame_count = {"frame_count": DF.count()}
-    traffic = trafficLight(DF)
+    traffic = objectQuery(trafficLight(DF), "traffic_light")
     Objects = objectStat(DF)
     pedestrian = objectQuery(Objects, "PEDESTRIAN")
     vehicle = objectQuery(Objects, "VEHICLE")
@@ -111,7 +117,7 @@ def spark_work(spark, pipeline, record_name):
 if __name__ == "__main__":
     from mongo_manager import MongoDB
 
-    mongo = MongoDB("../cfg/default.json")
+    mongo = MongoDB("../cfg/fudan.json")
     records_list = mongo.name_records()
     print(records_list)
     spark_list = mongo.name_spark()
