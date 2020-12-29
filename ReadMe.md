@@ -44,9 +44,7 @@
 # 启动mongo容器
 sudo bash docker/dev_mongo.sh start
 ```
-3. 修改配置文件，
-
-[default.cfg](cfg/default.cfg)
+3. 修改配置文件[default.cfg](cfg/default.cfg)
 ```json
 {
     "host":"主机host", 
@@ -78,12 +76,10 @@ sudo bash docker/dev_start.sh start
 ```
 #进入spark_server容器
 sudo bash docker/dev_into.sh
+# 运行写入程序，将数据写入数据库
+python record_worker.py
+# 运行读取程序，测试是否写入成功
 python record_worker.py
 ```
 
-6. 继续停留在spark_server容器内，运行读取程序，测试是否写入成功
-```
-python record_worker.py
-```
-
-7. 启动网页
+6. 启动网页
