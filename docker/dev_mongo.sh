@@ -10,27 +10,12 @@ source "${PROJECT_DIR}/docker/spark_apollo.bashrc"
 
 
 function clean_container() {
-    set -x
     docker stop ${MONGO_CONTAINER} 
     docker rm ${MONGO_CONTAINER}
-    set +x
-
-    if [ $? -ne 0 ]; then
-        error "Failed to delete container: ${MONGO_CONTAINER}, image: ${MONGO_IMAGE}"
-        exit 1
-    fi
 }
 
 function create_image() {
-    set -x
     docker pull ${MONGO_IMAGE}
-    set +x
-
-    if [ $? -ne 0 ]; then
-        error "Failed to pull image,please check it!"
-        exit 1
-    fi
-    
 }
 
 function start_work() {
@@ -63,6 +48,7 @@ function main() {
         clean_container
     fi
     if [ $1 == "start" ]; then
+        create_image
         start_work
     fi
 }

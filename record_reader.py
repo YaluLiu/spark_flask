@@ -70,10 +70,16 @@ if __name__ == "__main__":
     
 
     
-    # sort_words = ['vehicle_count','traffic_light_count','pedestrian_count','bicycle_count']
-    # sort_idx = 3
-    # spark_merge_res = recorder_reader.get_spark_merge_res(sort_words[sort_idx])
-    # for spark_res in spark_merge_res:
-    #     print(spark_res[sort_words[sort_idx]])
+    sort_words = ['vehicle_count','traffic_light_count','pedestrian_count','bicycle_count']
+    sort_idx = 0
+
+    print("-----{}------".format(sort_words[sort_idx]))
+    spark_merge_res = recorder_reader.get_spark_merge_res(sort_words[sort_idx])
+    for spark_res in spark_merge_res:
+        show_res = {
+            "record_name":spark_res["record_name"],
+            sort_words[sort_idx]:spark_res[sort_words[sort_idx]]
+        }
+        print(json.dumps(show_res,indent=4))
 
     recorder_reader.close_connnection()

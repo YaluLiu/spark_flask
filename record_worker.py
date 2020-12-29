@@ -40,6 +40,7 @@ class Record_Worker():
             spark_table.insert_one(spark_res)
 
             spark_merge_table = self.mongo.get_spark_merge_table()
+            spark_res["record_name"] = record_name
             spark_merge_table.insert_one(spark_res)
 
     

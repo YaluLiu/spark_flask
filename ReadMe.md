@@ -23,18 +23,6 @@
     ├── util                   # 经常被调用的python模块
     └── README.md              # readme
 
-#### mongo配置文件
-```json
-{
-    "host":"localhost",
-    "port":27017,
-    "user":"你的用户名",
-    "pwd":"你的密码",
-    "records_database":"records",
-    "spark_database":"spark" 
-}
-```
-*  非特殊情况下,只有host,user,pwd需要修改，设置为自己部署的mongodb参数.
 
 
 #### 服务器端接口说明
@@ -42,28 +30,7 @@
 见[API_interface.md](API_interface.md)
 
 
-#### mongodb搭建方法（下面为在本机搭建mongodb）
 
-```
-# 下载mongo镜像
-sudo bash docker/dev_mongo.sh create
-# 启动docker容器
-sudo bash docker/dev_mongo.sh start
-# 清空
-sudo bash docker/dev_mongo.sh clean
-```
-搭建好数据库环境后，使用[record_worker.py](record_worker.py)写入数据库，使用[record_reader.py](record_reader.py)测试是否能够成功读取
-
-#### docker脚本使用方法
-
-```
-# 创建spark_sever镜像
-sudo bash docker/dev_start.sh create
-# 启动spark_sever容器
-sudo bash docker/dev_start.sh start
-# 清空spark_sever容器
-sudo bash docker/dev_start.sh clean
-```
 
 #### 完整步骤
 
@@ -72,5 +39,51 @@ sudo bash docker/dev_start.sh clean
 链接：https://pan.baidu.com/s/1jMfC484-7by6HnR4WaV_PA 提取码：5o4l 
 ```
 2. 搭建mongodb数据库环境，测试可用
-3. 启动spark容器
-4. 启动前端网页
+
+```
+# 启动mongo容器
+sudo bash docker/dev_mongo.sh start
+```
+3. 修改配置文件，
+
+[default.cfg](cfg/default.cfg)
+```json
+{
+    "host":"主机host", 
+    "port":27017,
+    "user":"主机的用户名",
+    "pwd":"主机密码",
+    "records_database":"records",
+    "spark_database":"spark" 
+}
+```
+其中，host,user,pwd按照部署mongodb数据库的主机进行修改，如：
+```json
+{
+    "host":"192.168.200.201", 
+    "port":27017,
+    "user":"root",
+    "pwd":"admin",
+    "records_database":"records",
+    "spark_database":"spark" 
+}
+```
+
+
+4. 启动spark_server容器
+```
+sudo bash docker/dev_start.sh start
+```
+5. 将record和解析结果写入数据库
+```
+#进入spark_server容器
+sudo bash docker/dev_into.sh
+python record_worker.py
+```
+
+6. 继续停留在spark_server容器内，运行读取程序，测试是否写入成功
+```
+python record_worker.py
+```
+
+7. 启动网页

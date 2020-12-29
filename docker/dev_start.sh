@@ -104,6 +104,7 @@ function main() {
         clean_container
     fi
     if [ $1 == "start" ]; then
+        create_image
         start_work
     fi
     if [ $1 == "test" ]; then
