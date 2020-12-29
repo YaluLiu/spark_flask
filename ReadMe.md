@@ -11,7 +11,7 @@
   * [record_worker.py](record_worker.py) 与mongodb交互，读取json格式数据，连同spark解析结果一起存储到数据库
   * [query.py](util/query.py)  spark工作模块
   * [mongo_manager.py](util/mongo_manager.py)  连接mongodb的模块
-  * [default.cfg](cfg/default.cfg)  默认的连接mongodb的配置，需要修改host，user,pwd三个参数
+  * [default.json](cfg/default.json)  默认的连接mongodb的配置，需要修改host，user,pwd三个参数
 
 #### 目录结构
 
@@ -44,7 +44,7 @@
 # 启动mongo容器
 sudo bash docker/dev_mongo.sh start
 ```
-3. 修改配置文件[default.cfg](cfg/default.cfg)
+3. 修改配置文件[default.json](cfg/default.json)
 ```json
 {
     "host":"主机host", 
