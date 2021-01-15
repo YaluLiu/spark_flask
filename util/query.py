@@ -8,8 +8,6 @@ import pyspark.sql.functions as F
 from pyspark.sql import Window
 
 
-import numpy as np
-import pandas as pd
 import json
 import os
 
