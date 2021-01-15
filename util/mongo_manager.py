@@ -4,7 +4,6 @@ from util.solve_json import read_json
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId 
-from sshtunnel import SSHTunnelForwarder
 import json
 
 class MongoDB():
@@ -21,14 +20,14 @@ class MongoDB():
         self.connect()
 
     def connect(self):
-        self.server = SSHTunnelForwarder(
-            self.host,
-            ssh_username=self.user,
-            ssh_password=self.pwd,
-            remote_bind_address=('127.0.0.1', self.port)
-        )
-        self.server.start()
-        self.client = MongoClient('mongodb://localhost:' + str(self.server.local_bind_port) + '/')
+        # self.server = SSHTunnelForwarder(
+        #     self.host,
+        #     ssh_username=self.user,
+        #     ssh_password=self.pwd,
+        #     remote_bind_address=('127.0.0.1', self.port)
+        # )
+        # self.server.start()
+        self.client = MongoClient('mongodb://localhost:' + str( self.port) + '/')
     
     def records_database(self):
         return self.client[self.records_database_name]
@@ -73,6 +72,6 @@ class MongoDB():
 
     def close(self):
         self.client.close()
-        self.server.stop()
+        # self.server.stop()
 
 

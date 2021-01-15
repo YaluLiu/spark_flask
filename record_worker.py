@@ -31,7 +31,7 @@ class Record_Worker():
     def spark_solve(self):
         for file_name in self.list_records:
             record_name = file_name.split(".")[0]
-            spark, pipeline = init_spark(self.mongo.server, self.mongo.records_database_name, record_name)
+            spark, pipeline = init_spark(self.mongo.port, self.mongo.records_database_name, record_name)
             spark_res = spark_work(spark, pipeline, record_name)
             spark.stop()
             print(spark_res.keys())
