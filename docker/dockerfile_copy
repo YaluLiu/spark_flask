@@ -1,0 +1,7 @@
+from 353942829/spark_env
+
+COPY spark_apollo /home
+
+WORKDIR      /home
+ENTRYPOINT   ["gunicorn"]
+CMD          ["-c","gunicorn.py", "server:app"]
