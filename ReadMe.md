@@ -86,7 +86,7 @@ python record_reader.py
 
 #### 基于k8s完整步骤（spark-docker代码为copy模式）
 
-1. 拉取spark镜像353942829/spark（也可略过此步骤）
+1. 拉取spark镜像353942829/spark
 ```
 sudo docker pull 353942829/spark
 ```
@@ -94,13 +94,15 @@ sudo docker pull 353942829/spark
 2. 启动pod
 ```
 启动pod
-sudo kubectl apply -f all.yaml
+sudo kubectl apply -f k8s/k8s_host.yaml
 ```
+  * [k8s_host.yaml](k8s/k8s_host.yaml)  host模式。
+  * [all.yaml](k8s/all.yaml) 端口映射模式。翻墙的机器和美国的服务器成功了，设置杭州阿里云镜像库的那台机器一直pending
 
 3. 进入spark容器,并将数据写入数据库
 ```
 #进入spark_server容器
-sudo kubectl exec -f all.yaml -it -c spark -- bash
+sudo kubectl exec -it apollo bash
 # 运行写入程序，将数据写入数据库
 python record_worker.py
 # 运行读取程序，测试是否写入成功
