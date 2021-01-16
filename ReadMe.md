@@ -100,8 +100,10 @@ sudo kubectl apply -f all.yaml
 3. 进入spark容器,并将数据写入数据库
 ```
 #进入spark_server容器
-sudo kubectl exec apollo -it -c spark -- bash
+sudo kubectl exec -f all.yaml -it -c spark -- bash
 # 运行写入程序，将数据写入数据库
 python record_worker.py
 # 运行读取程序，测试是否写入成功
 python record_reader.py
+
+
