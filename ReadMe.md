@@ -91,14 +91,16 @@ python record_reader.py
 sudo docker pull 353942829/spark
 ```
 
-2. 启动pod
+2. 启动pod，分别在3台机器上进行了测试。机器A在国内并搭建了VPN，机器B在国内没有搭VPN，设置了杭州阿里云镜像库，机器C在美国。
+
+  * [k8s_host.yaml](k8s/k8s_host.yaml) host模式，对于ABC都能成功。
 ```
-启动pod
 sudo kubectl apply -f k8s/k8s_host.yaml
 ```
-  * [k8s_host.yaml](k8s/k8s_host.yaml)  host模式。
-  * [all.yaml](k8s/all.yaml) 端口映射模式。翻墙的机器和美国的服务器成功了，设置杭州阿里云镜像库的那台机器一直pending
-
+  * [k8s_port.yaml](k8s/k8s_port.yaml) 端口映射模式,需要翻墙。在翻墙的机器A和美国的服务器C成功了，设置杭州阿里云镜像库的那台机器B一直pending，原因未明。
+```
+sudo kubectl apply -f k8s/k8s_port.yaml
+```
 3. 进入spark容器,并将数据写入数据库
 ```
 #进入spark_server容器
