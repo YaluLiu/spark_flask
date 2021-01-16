@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: spark_apollo
+  name: apollo
 spec:
   containers:
     - name: spark

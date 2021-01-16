@@ -86,14 +86,21 @@ python record_reader.py
 
 #### 基于k8s完整步骤（spark-docker代码为copy模式）
 
-1. 启动pod
+1. 拉取spark镜像353942829/spark（也可略过此步骤）
 ```
+sudo docker pull 353942829/spark
+```
+
+2. 启动pod
+```
+启动pod
 sudo kubectl apply -f all.yaml
 ```
-2. 进入spark容器,并将数据写入数据库
+
+3. 进入spark容器,并将数据写入数据库
 ```
 #进入spark_server容器
-sudo kubectl exec -it spark_apollo -c spark bash
+sudo kubectl exec apollo -it -c spark -- bash
 # 运行写入程序，将数据写入数据库
 python record_worker.py
 # 运行读取程序，测试是否写入成功
