@@ -32,11 +32,11 @@
 
 
 
-#### 完整步骤
+#### 单独使用docker完整步骤（volume模式，与k8s-copy模式冲突）
 
 1. 下载压缩后的datas目录，里面放置了两个测试用json格式record文件。
 ```
-链接：https://pan.baidu.com/s/1jMfC484-7by6HnR4WaV_PA 提取码：5o4l 
+链接：https://pan.baidu.com/s/1jMfC484-7by6HnR4WaV_PA 提取码：5o4l
 ```
 2. 搭建mongodb数据库环境，测试可用
 
@@ -79,7 +79,22 @@ sudo bash docker/dev_into.sh
 # 运行写入程序，将数据写入数据库
 python record_worker.py
 # 运行读取程序，测试是否写入成功
-python record_worker.py
+python record_reader.py
 ```
 
 6. 启动网页
+
+#### 基于k8s完整步骤（spark-docker代码为copy模式）
+
+1. 启动pod
+```
+sudo kubectl apply -f all.yaml
+```
+2. 进入spark容器,并将数据写入数据库
+```
+#进入spark_server容器
+sudo kubectl exec -it spark_apollo -c spark
+# 运行写入程序，将数据写入数据库
+python record_worker.py
+# 运行读取程序，测试是否写入成功
+python record_reader.py
