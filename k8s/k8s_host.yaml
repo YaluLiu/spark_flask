@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: apollo
+spec:
+  hostNetwork: true
+  containers:
+    - name: spark
+      image: 353942829/spark
+    - name: mongo
+      image: mongo:4.4.2
+

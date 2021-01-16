@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongo
+spec:
+  hostNetwork: true
+  containers:
+    - name: mongo
+      image: mongo:4.4.2
