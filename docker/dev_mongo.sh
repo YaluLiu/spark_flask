@@ -22,7 +22,7 @@ function start_work() {
     set -x
 
     ${DOCKER_RUN} \
-        --net=host
+        --net=host \
         --name "${MONGO_CONTAINER}" \
         --restart=always \
         "${MONGO_IMAGE}"

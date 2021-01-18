@@ -77,7 +77,7 @@ function start_work() {
     check_clean_container
     set -x
     ${DOCKER_RUN} \
-        --net=host
+        --net=host \
         -v ${PROJECT_DIR}:${DOCKER_ROOT_DIR} \
         --name "${SPARK_CONTAINER}" \
         --restart=always \
