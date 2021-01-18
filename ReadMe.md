@@ -34,7 +34,7 @@
 
 #### 单独使用docker完整步骤（volume模式，与k8s-copy模式冲突）
 
-1. 下载压缩后的datas目录，里面放置了两个测试用json格式record文件。
+1. 下载压缩后的datas目录，里面放置了两个测试用json格式record文件。目录路径与cfg,docker,目录同级。
 ```
 链接：https://pan.baidu.com/s/1jMfC484-7by6HnR4WaV_PA 提取码：5o4l
 ```
@@ -44,35 +44,12 @@
 # 启动mongo容器
 sudo bash docker/dev_mongo.sh start
 ```
-3. 修改配置文件[default.json](cfg/default.json)
-```json
-{
-    "host":"主机host", 
-    "port":27017,
-    "user":"主机的用户名",
-    "pwd":"主机密码",
-    "records_database":"records",
-    "spark_database":"spark" 
-}
-```
-其中，host,user,pwd按照部署mongodb数据库的主机进行修改，如：
-```json
-{
-    "host":"192.168.200.201", 
-    "port":27017,
-    "user":"root",
-    "pwd":"admin",
-    "records_database":"records",
-    "spark_database":"spark" 
-}
-```
 
-
-4. 启动spark_server容器
+3. 启动spark_server容器
 ```
 sudo bash docker/dev_start.sh start
 ```
-5. 将record和解析结果写入数据库
+4. 将record和解析结果写入数据库
 ```
 #进入spark_server容器
 sudo bash docker/dev_into.sh
@@ -82,7 +59,7 @@ python record_worker.py
 python record_reader.py
 ```
 
-6. 启动网页
+5. 启动网页
 
 #### 基于k8s完整步骤（spark-docker代码为copy模式）
 
