@@ -152,3 +152,6 @@ client.py
 # Jupyter notebook
 *.ipynb
 
+# volume config,always change
+k8s/spark_volume.yaml
+

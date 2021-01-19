@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spark
+spec:
+  hostNetwork: true
+  containers:
+    - name: spark
+      image: 353942829/spark
+      volumeMounts:
+      - name: spark-code
+        mountPath: /home
+  volumes:
+  - name: spark-code
+    hostPath:
+      path: /home/fudan/lyl/web/spark_apollo
+      type: Directory

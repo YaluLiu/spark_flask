@@ -27,7 +27,7 @@ class MongoDB():
         #     remote_bind_address=('127.0.0.1', self.port)
         # )
         # self.server.start()
-        self.client = MongoClient('mongodb://localhost:' + str( self.port) + '/')
+        self.client = MongoClient(host = ['{}:{}'.format(self.host,self.port)])
     
     def records_database(self):
         return self.client[self.records_database_name]
