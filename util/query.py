@@ -79,13 +79,13 @@ def objectQuery(DF, object_type):
             object_type.lower() + "_count": DF.count()}
 
 
-def init_spark(mongo_port, records_database_name,record_name):
+def init_spark(mongo_host,mongo_port, records_database_name,record_name):
     pipeline = [{'$project': {'timestamp': '$autoDrivingCar.timestampSec', 
                               'signal': '$trafficSignal.currentSignal', 
                               'frameID': '$sequenceNum', 
                               'object': '$object'}}]
     
-    input_uri = 'mongodb://localhost:{}/{}.{}'.format(mongo_port,records_database_name,record_name) 
+    input_uri = 'mongodb://{}:{}/{}.{}'.format(mongo_host,mongo_port,records_database_name,record_name) 
     spark = SparkSession \
             .builder \
             .appName(record_name) \
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     for record_name in records_list:
         print(mongo.records_database_name, record_name)
-        spark, pipeline = init_spark(mongo.port, mongo.records_database_name, record_name)
+        spark, pipeline = init_spark(mongo.host,mongo.port, mongo.records_database_name, record_name)
         spark_res = spark_work(spark, pipeline, record_name)
         spark.stop()
 
