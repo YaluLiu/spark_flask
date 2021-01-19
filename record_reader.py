@@ -68,8 +68,6 @@ if __name__ == "__main__":
         # print(json.dumps(frames,indent=4))
         print(frames[0].keys())
     
-
-    
     sort_words = ['vehicle_count','traffic_light_count','pedestrian_count','bicycle_count']
     sort_idx = 0
 
