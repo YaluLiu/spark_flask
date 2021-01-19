@@ -61,7 +61,7 @@ python record_reader.py
 
 5. 启动网页
 
-#### 基于k8s完整步骤（spark-docker代码为copy模式）
+#### 基于k8s完整步骤
 
 1. 拉取spark镜像353942829/spark
 ```
@@ -78,6 +78,17 @@ sudo kubectl apply -f k8s/k8s_host.yaml
 ```
 sudo kubectl apply -f k8s/k8s_port.yaml
 ```
+
+或者单独启动各个容器
+  * 修改[spark_volume.yaml](k8s/spark_volume.yaml)中的hostpath，修改为当前项目在主机中的绝对地址。 单独启动spark
+```
+sudo kubectl apply -f k8s/spark_volume.yaml
+```
+  * [mongo.yaml](k8s/mongo.yaml) 单独启动mongo容器
+```
+sudo kubectl apply -f k8s/mongo.yaml
+```
+
 3. 进入spark容器,并将数据写入数据库
 ```
 #进入spark_server容器
